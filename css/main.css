@@ -1,0 +1,21 @@
+.deleteIcon {
+    cursor: pointer;
+    user-select: none;
+}
+
+.check {
+    cursor: pointer;
+    user-select: none;
+}
+
+.gold {
+    color: gold;
+}
+
+.red {
+    color: orangered;
+}
+
+.opacity {
+    opacity: 0.3;
+}

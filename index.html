@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>APP Lista de la Compra</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Mi CSS -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+    <main id="main">
+        <div class="container" id="container">
+            <div class="row justify-content-center">
+                <div class="col-12 bg-primary mt-5 pl-4 pr-4 pt-2 pb-2 rounded text-center align-content-center">
+                    <h1 id="titulo1" class="text-light">
+                        <i class="material-icons icon align-middle">
+                            shopping_cart
+                        </i>
+                        <!-- Esta variable es de Vue -->
+                        {{title}}</h1>
+                </div>
+                <div class="row mt-5" id=" botones">
+                    <div class="col-12">
+                        <form id="form" class="form-inline justify-content-center w-100">
+                            <div class="form-group mr-1">
+                                <input type="text" id="article" class="form-control" placeholder="Artículo a comprar"
+                                    v-model="article">
+                            </div>
+                            <!-- Con Vue no se utilizan los id's -->
+                            <div class="form-group mr-1">
+                                <input type="number" id="quantity" class="form-control" placeholder="Cantidad"
+                                    v-model="quantity">
+                            </div>
+                            <div class="form-group mr-2">
+                                <select v-model="priority" class="form-control">
+                                    <option value="Baja" selected>Baja</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Urgente">Urgente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <!-- Vamos a controlar el atributo disabled del boton con el atributo v-bind, si el input article está vacío boton estará disabled
+                                Además con v-on:click controlaremos el evento click del boton
+                                Agregamos tambien .prevent para evitar que cada vez que pulsemos el boton no se recargue la pagina
+                                -->
+                                <button id="addButton" class="btn btn-outline-primary"
+                                    v-bind:disabled="article.length === 0"
+                                    v-on:click.prevent="addArticle">Añadir</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center align-content-center mt-4 bg-secondary shopList rounded">
+                <div id="shopList" class="col-10 mt-3 p-1">
+                    <!-- Aquí insertamos el primer componente -->
+                    <template v-if="list.length === 0">
+                        <mensaje-error>
+                            No hay artículos que comprar por ahora
+                        </mensaje-error>
+                    </template>
+                    <!-- Y si el array SÍ tiene elementos....
+                        template v-else -->
+                    <template v-else>
+                        <!-- Ahora tenemos que iterar sobre el listado (array list) de productos, con v-for en el div -->
+                        <elemento-lista v-on:click-check="changeState(element)" v-bind:producto="element"
+                            v-on:click-delete="deleteElement(element)" v-for="element in list"></elemento-lista>
+                    </template>
+                </div>
+            </div>
+            <!-- Calculamos porcentaje, para ello tendremos que manipular style, aria-valuenow
+                añadiendo v-bind: antes de cada atributo
+            -->
+            <barra-progreso v-show="list.length > 0" v-bind:porcentaje="percentX"></barra-progreso>
+        </div>
+        <!-- Esto es para depurar, nunca en producción -->
+        <pre class="mt-5">{{$data}}</pre>
+    </main>
+    <!-- template solo lo lee/interpreta Vue -->
+    <template id="plantilla-barra-progreso">
+        <div class="progress mt-4">
+            <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
+                v-bind:style="{ 'width': porcentaje }" v-bind:aria-valuenow="porcentaje" aria-valuemin="0"
+                aria-valuemax="100">
+                {{ porcentaje }}
+            </div>
+        </div>
+    </template>
+    <!-- Si el array list está vacío... que salga esto 
+                    template v-if="list.length === 0" -->
+    <template id="plantilla-mensaje-error">
+        <div class="alert alert-danger">
+            <i class="material-icons align-middle">list</i>
+            <slot></slot>
+        </div>
+    </template>
+
+    <template id="elemento-lista">
+        <!-- 
+        v-bin:class, las clases pasan a ser variables js
+                                Hacemos esto para que dependiendo del estado del elemento...
+                                element.estate ? opacity : '' 
+                                para que quite o ponga la clase opacity
+        -->
+        <div v-bind:class="['alert', 'alert-success', producto.estate ? 'opacity' : '']">
+            <i class="material-icons align-middle">list</i>
+            <b>{{producto.article}}</b>
+            <span class="badge badge-primary">{{producto.quantity}}</span>
+            <span class="badge badge-pill badge-secondary">{{producto.priority}}</span>
+            <!-- Agregamos evento al icono papelera, pasamos como argumento al metodo deleteElement el propio element que se está renderizando -->
+            <span id="id" class="d-none">{{producto.id}}</span>
+            <i v-on:click="eliminarItem" class="material-icons align-middle float-right deleteIcon">delete</i>
+            <!-- Ahora vamos con el icono de check
+                Si pulsamos el check, cambiamos el valor state del objeto de la lista en el que pulsemos
+                Asociamos también el atributo class para manipular las clases, cuando ponemos v-bin:class, las clases pasan a ser variables js
+                Hacemos esto para que dependiendo del estado del elemento...
+                element.estate ? red : gold
+                cambie la clase entre red y gold
+                -->
+            <i v-on:click="cambiarEstilo"
+                v-bind:class="['material-icons', 'align-middle', 'float-right', 'check', producto.estate ? 'red' : 'gold']">check_circle_outline</i>
+        </div>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- Mi JS -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>
